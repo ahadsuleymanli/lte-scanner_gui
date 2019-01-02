@@ -28,7 +28,9 @@ set(project_headers
     ../include/LTE-Tracker_adapter.h
     ../include/lte-cell_data.h
     ../include/producer_consumer.h
-    ../include/lte_cell_info_container.h)
+    ../include/lte_cell_info_container.h
+    ../include/mousereactiveqlabel.h
+    ../include/mousereactiveqwidget.h)
 
 set(project_sources
     main.cpp

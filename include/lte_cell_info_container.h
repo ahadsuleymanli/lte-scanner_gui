@@ -5,11 +5,18 @@
 #include <iostream>
 using namespace std;
 
+struct Port
+{
+  string portSNR_string;
+  vector<double> plot;
+};
+
 struct Node
 {
   string cellID, frameTiming, health;
-  vector<string> portSNR_list;
-  vector<double> x,y;
+
+  vector<Port> port_list;
+  vector<double> plot;
   Node *next;
 };
 
@@ -36,11 +43,16 @@ class Cell_info_LL
     Node * getHead(){
         return head;
     }
+    Node * getNext(Node *currentNode){
+        return currentNode->next;
+    }
 
     void addNode(string cellID, vector<string> portSNR_list);
-    void display();
+    void addNode(string cellID, vector<string> portSNR_list, vector<double> plot);
+    string display();
+    void print();
     Node *getNodeByCellID(string cellID);
-    void setPlot(string cellID, vector<double> x,vector<double> y);
+    void setPlot(string cellID, vector<double> plot);
     void deleteByCellID(string cellID)
     {
       //Node *toDelete= getNodeByCellID(cellID);
@@ -67,12 +79,20 @@ class Cell_info_LL
         Node* next;
         while (current != NULL) {
             next = current->next;
-            current->portSNR_list.clear();
+
+            clearPortList(current);
             delete current;
             current = next;
         }
         head=NULL;
         tail=NULL;
+    }
+    void clearPortList(Node* node){
+
+        for(int i=0 ; node!=nullptr && i < node->port_list.size() ; i++){
+            node->port_list[i].plot.clear();
+        };
+       node->port_list.clear();
     }
 };
 

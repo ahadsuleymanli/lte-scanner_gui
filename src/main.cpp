@@ -22,7 +22,8 @@ void run2()
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
     //cout<<"printing: ";
-    cellsList->display();
+    //cout<<cellsList->display();
+    cellsList->print();
     cout<<endl;
     }
 
@@ -32,9 +33,10 @@ int main(int argc, char *argv[])
 {
     cellsList = new Cell_info_LL();
     boost::scoped_thread<> t{runLTETracker}; //starting LTE-Tracker
-    boost::scoped_thread<> t2{run2};
+    //boost::scoped_thread<> t2{run2};
     QApplication a(argc, argv);
     MainWindow w;
+    w.setCellsList(cellsList);
     w.show();
 
     return a.exec();
