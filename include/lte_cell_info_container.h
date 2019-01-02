@@ -59,7 +59,7 @@ class Cell_info_LL
       Node *previous;
       Node *current;
       current = head;
-      if( head!=NULL && (head->cellID).compare(cellID) ==0 ){
+      if( head!=NULL && (head->cellID).compare(cellID) == 0 ){
         head = head->next;
         delete current;
         return;

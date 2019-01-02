@@ -9,46 +9,50 @@
 #include "mousereactiveqlabel.h"
 #include "mousereactiveqwidget.h"
 
-class PlotDrawer
-{
-    private:
-    MainWindow * ui;
-    Node * cellsListNode; //node where plot is stored
-    int portNo;           //port whose plot to display
+PlotDrawer *plotDrawer;
 
-    public:
+void PlotDrawer::drawPlot(){
+    if (cellsListNode==nullptr)
+        this->cellsListNode = ui->cellsList->getHead();
 
-    PlotDrawer(MainWindow * ui){
-        this->ui = ui;
-    }
-    ~PlotDrawer();
-
-    void drawPlot(){
-        Cell_info_LL * cellsList = ui->cellsList;
-        QCustomPlot* customPlot = ui->customPlot;
-
-        if(true && cellsList->getHead()!=nullptr){
-            vector<double> vect;
-            for (int i=0; i<cellsList->getHead()->plot.size(); ++i)
-            {
-              vect.push_back((cellsList->getHead()->plot)[i]);
-            }
-            QVector<double> y = QVector<double>::fromStdVector(vect);
-            QVector<double> x;
-            for (int i=0; i<y.size(); ++i)
-            {
-              x.push_back(i);
-            }
-            customPlot->graph(0)->setData(x, y);
-            customPlot->replot();
-
-            //qDebug()<<"plotting: "<<y.size();
+    if(true && cellsListNode!=nullptr){
+        customPlot->yAxis->setLabel( QString::fromStdString(cellsListNode->cellID) );
+        vector<double> vect;
+        for (int i=0; i<cellsListNode->plot.size(); ++i)
+        {
+          vect.push_back((cellsListNode->plot)[i]);
         }
 
-    }
-};
+        QVector<double> y = QVector<double>::fromStdVector(vect);
+        QVector<double> x;
+        for (int i=0; i<y.size(); ++i)
+        {
+          x.push_back(i);
+        }
+        //customPlot->graph(0)->setData(x, y);
+        customPlot->clearGraphs();
 
-PlotDrawer *plotDrawer;
+        QVector<double> amplitudes;
+        QVector<double> keys;
+        for( int i = 0 ; i<y.size() ; i++){
+            customPlot->addGraph();
+            QVector<double> amplitudes;
+            amplitudes.push_back(y[i]);
+            amplitudes.push_back(yMin);
+            QVector<double> keys;
+            keys.push_back(i);
+            keys.push_back(i);
+            customPlot->graph(i)->addData(keys,amplitudes);
+        }
+        customPlot->replot();
+    }
+
+}
+void PlotDrawer::setNode(Node *cellsListNode){
+    this->cellsListNode=cellsListNode;
+
+}
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -60,13 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     customPlot = ui->customPlot;
     plotDrawer = new PlotDrawer(this);
 
-    customPlot->addGraph();
-    // give the axes some labels:
-    //customPlot->xAxis->setLabel("x");
-    //customPlot->yAxis->setLabel("y");
-    // set axes ranges, so we see all data:
-    customPlot->xAxis->setRange(0, 72);
-    customPlot->yAxis->setRange(-120, 10);
+
 
     //1 sec interval timer and it's thread
     QThread* thread = new QThread;
@@ -140,7 +138,7 @@ void  MainWindow::upDateCellsInfo(){
         QFormLayout *PCILayout = new QFormLayout((QWidget*)widget);
         QString str = QString::fromStdString( "  PCI: " + cellsListNode->cellID);
 //        MousereactiveQLabel *PCI_label = new MousereactiveQLabel(str, widget,"rgb(255, 100, 80)","grey");
-        MousereactiveQLabel *PCI_label = new MousereactiveQLabel(str, widget,"rgb(255, 100, 80)","grey", cellsListNode);
+        MousereactiveQLabel *PCI_label = new MousereactiveQLabel(str, widget,"rgb(255, 100, 80)","grey", cellsListNode, plotDrawer);
         PCI_label->setTextColor("blue");
         PCI_label->setMargin(1);
         PCILayout->addWidget(PCI_label);

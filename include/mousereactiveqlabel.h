@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <mousereactiveqwidget.h>
 #include "lte_cell_info_container.h"
+#include "mainwindow.h"
 /*
 This Qlabel sets self to a specific color on mouseover. as well as the widget it is housed in.
 */
@@ -20,13 +21,16 @@ public:
         this->reactiveQWidget = NULL;
         this->selfColor = selfColor;
         this->widgetColor = widgetColor;
+        this->cellsListNode = nullptr;
+        this->plotDrawer = nullptr;
     }
-    MousereactiveQLabel(QString str, QWidget *widget, QString selfColor, QString widgetColor, Node *cellsListNode) : QLabel(str){
-        this->widget = widget;
-        this->reactiveQWidget = NULL;
+    MousereactiveQLabel(QString str, MousereactiveQWidget *reactiveQWidget, QString selfColor, QString widgetColor, Node *cellsListNode, PlotDrawer * plotDrawer ) : QLabel(str){
+        this->widget = NULL;
+        this->reactiveQWidget = reactiveQWidget;
         this->selfColor = selfColor;
         this->widgetColor = widgetColor;
         this->cellsListNode = cellsListNode;
+        this->plotDrawer = plotDrawer;
     }
     MousereactiveQLabel(QString str, MousereactiveQWidget *reactiveQWidget, QString selfColor, QString widgetColor) : QLabel(str){
         this->widget = NULL;
@@ -34,6 +38,8 @@ public:
         this->selfColor = selfColor;
         this->widgetColor = widgetColor;
         reactiveQWidget->setReactionColors(widgetColor);
+        this->cellsListNode = nullptr;
+        this->plotDrawer = nullptr;
     }
     void setTextColor(QString textColor){
         this->textColor = textColor;
@@ -46,7 +52,8 @@ signals:
 protected:
 
     void mousePressEvent(QMouseEvent* event){
-
+        if(cellsListNode!=nullptr)
+            plotDrawer->setNode(cellsListNode);
         //emit clicked();
     }
 
@@ -77,5 +84,6 @@ private:
     MousereactiveQWidget *reactiveQWidget;
     QString selfColor,textColor, widgetColor;
     Node *cellsListNode;
+    PlotDrawer *plotDrawer;
 };
 #endif // PID_LABEL_H
