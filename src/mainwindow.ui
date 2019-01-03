@@ -116,6 +116,20 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="switchGraph">
+          <property name="text">
+           <string>Swiitch Between Graphs</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="graphStyleBtn">
+          <property name="text">
+           <string>Graph Style</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>

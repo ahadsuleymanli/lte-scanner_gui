@@ -5,6 +5,7 @@
 #include <LTE-Tracker_adapter.h>
 #include "lte-cell_data.h"
 #include "lte_cell_info_container.h"
+#include "ascii_art_dft.hpp"
 Cell_info_LL *cellsList;
 
 
@@ -34,10 +35,19 @@ int main(int argc, char *argv[])
     cellsList = new Cell_info_LL();
     boost::scoped_thread<> t{runLTETracker}; //starting LTE-Tracker
     //boost::scoped_thread<> t2{run2};
+
+    double freq(18501e5);
+    double bw(20e6);
+    bool stopFlag = false;
+    vector<float> lpdftVect;
+    boost::thread thread1{get_fft,boost::ref(freq),boost::ref(stopFlag),boost::ref(lpdftVect)};
+
+
     QApplication a(argc, argv);
     MainWindow w;
+
+    w.setUsrpGetterParams( &freq,  &stopFlag,  &lpdftVect);
     w.setCellsList(cellsList);
     w.show();
-
     return a.exec();
 }

@@ -15,11 +15,18 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     void setCellsList(Cell_info_LL * cellsList);
+    void setUsrpGetterParams(double *freq, bool *stopFlag, std::vector<float> *lpdftVect){
+        this->freq=freq;
+        this->stopFlag=stopFlag;
+        this->lpdftVect = lpdftVect;
+    }
     ~MainWindow();
 
 
 public slots:
     void  upDateCellsInfo();
+    void  handleSwitchBtn();
+    void  handleGraphStyle();
     void  upDatePlot();
 
 protected:
@@ -36,6 +43,10 @@ public:
     QFormLayout *scrollLayout;
     QCustomPlot* customPlot;
 
+    double *freq;
+    bool *stopFlag;
+    vector<float> *lpdftVect;
+
 };
 
 class PlotDrawer
@@ -46,9 +57,9 @@ class PlotDrawer
     Node * cellsListNode = nullptr; //node where plot is stored
     int portNo;           //port whose plot to display
 
-    const int yMin = -120;
-    const int yMax = 10;
-    const int xMax = 72;
+    int yMin = -140;
+    int yMax = -90;
+    int xMax = 72;
 
     public:
 
@@ -63,6 +74,7 @@ class PlotDrawer
         // set axes ranges, so we see all data:
         customPlot->xAxis->setRange(0, xMax);
         customPlot->yAxis->setRange(yMin, yMax);
+        customPlot->xAxis->setVisible(false);
     }
     ~PlotDrawer();
 

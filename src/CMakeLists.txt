@@ -30,8 +30,10 @@ set(project_headers
     ../include/producer_consumer.h
     ../include/lte_cell_info_container.h
     ../include/mousereactiveqlabel.h
-    ../include/mousereactiveqwidget.h)
-
+    ../include/mousereactiveqwidget.h
+    ../usrp_interface_src/ascii_art_dft.hpp
+)
+#    ../usrp_interface_src/ascii_art_dft.hpp
 set(project_sources
     main.cpp
     mainwindow.cpp
@@ -42,8 +44,10 @@ set(project_sources
     lte_cell_info_container.cpp)
 
 
+
+
 qt5_wrap_ui(UI_HEADERS ${project_ui})
-qt5_wrap_cpp(PROJECT_SOURCES_MOC ${project_headers})
+qt5_wrap_cpp(PROJECT_SOURCES_MOC ${project_headers} )
 
 # add_executable(helloworld main.cpp mainwindow.cpp ${PROJECT_SOURCES_MOC} ${UI_HEADERS})
 add_executable(helloworld ${project_sources}  ${PROJECT_SOURCES_MOC} ${UI_HEADERS} )
@@ -53,27 +57,6 @@ TARGET_LINK_LIBRARIES (helloworld general LTE-Tracker_helpers_lib)
 TARGET_LINK_LIBRARIES (helloworld general LTE_MISC)
 TARGET_LINK_LIBRARIES (helloworld debug itpp_debug ${common_link_libs})
 TARGET_LINK_LIBRARIES (helloworld optimized itpp ${common_link_libs})
-TARGET_LINK_LIBRARIES (helloworld optimized itpp ${common_link_libs})
+TARGET_LINK_LIBRARIES (helloworld usrp_library_module)
 
-# Code use to test whether the rtl_sdr dongle is dropping samples
-# or not.
-#ADD_EXECUTABLE (rtl_sdr_check rtl_sdr_check.cpp)
-#TARGET_LINK_LIBRARIES (rtl_sdr_check general LTE_MISC curses)
-#TARGET_LINK_LIBRARIES (rtl_sdr_check debug itpp_debug ${common_link_libs})
-#TARGET_LINK_LIBRARIES (rtl_sdr_check optimized itpp ${common_link_libs})
-
-# Experimental code...
-#ADD_EXECUTABLE (exp exp.cpp)
-#TARGET_LINK_LIBRARIES (exp general LTE_MISC)
-#TARGET_LINK_LIBRARIES (exp debug itpp_debug ${common_link_libs})
-#TARGET_LINK_LIBRARIES (exp optimized itpp ${common_link_libs})
-
-# Create a test that tests the overall functionality of the cell searcher.
-# The tests in the 'tests' subdirectory test some of the smaller internal
-# functions.
-#ADD_TEST(FullTest CellSearch -s 739000000 -l -d "${PROJECT_SOURCE_DIR}/test")
-#SET_TESTS_PROPERTIES(FullTest PROPERTIES PASS_REGULAR_EXPRESSION cell.ID..271)
-
-#INSTALL( TARGETS CellSearch LTE-Tracker helloworld DESTINATION bin )
-#INSTALL( TARGETS helloworld DESTINATION bin )
 

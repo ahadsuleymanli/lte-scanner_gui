@@ -54,6 +54,7 @@ CONFIGURE_FILE (
 
 # Where .h files are located
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/usrp_interface_src")
 INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/include")
 INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/src")
 
@@ -62,6 +63,7 @@ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/src")
 # Descend into subdirectories
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(test)
+ADD_SUBDIRECTORY(usrp_interface_src)
 
 # Uninstall target
 configure_file(

@@ -9,13 +9,20 @@
 #include "mousereactiveqlabel.h"
 #include "mousereactiveqwidget.h"
 
+bool draw_usrp = true;
+bool graphStyle = false;
+
 PlotDrawer *plotDrawer;
 
 void PlotDrawer::drawPlot(){
+    customPlot->xAxis->setRange(0,xMax);
+    customPlot->yAxis->setRange(yMin,yMax);
     if (cellsListNode==nullptr)
         this->cellsListNode = ui->cellsList->getHead();
 
-    if(true && cellsListNode!=nullptr){
+    if(!draw_usrp && cellsListNode!=nullptr){
+        yMax = -10;
+        xMax = 72;
         customPlot->yAxis->setLabel( QString::fromStdString(cellsListNode->cellID) );
         vector<double> vect;
         for (int i=0; i<cellsListNode->plot.size(); ++i)
@@ -34,6 +41,7 @@ void PlotDrawer::drawPlot(){
 
         QVector<double> amplitudes;
         QVector<double> keys;
+
         for( int i = 0 ; i<y.size() ; i++){
             customPlot->addGraph();
             QVector<double> amplitudes;
@@ -45,6 +53,67 @@ void PlotDrawer::drawPlot(){
             customPlot->graph(i)->addData(keys,amplitudes);
         }
         customPlot->replot();
+    }
+    else if(draw_usrp){
+        yMax = -80;
+        vector<float> *vect = ui->lpdftVect;
+        if((*vect).size())
+        {
+            customPlot->clearGraphs();
+
+            if (this->xMax<vect->size()){
+                this->xMax = vect->size();
+            }
+            if(graphStyle){
+                int j = 0;
+                int k = 0;
+                customPlot->addGraph();
+                customPlot->graph(0)->setLineStyle((QCPGraph::LineStyle)1);
+                customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 1));
+                for( int i = 0 ; i<vect->size() ; i++){
+                    double amplitude = (*vect)[i];
+                    if((*vect)[i]>yMax){
+                        yMax = amplitude + 5;
+                    }
+                    if(i==j){
+
+                    QVector<double> amplitudes;
+                    QVector<double> keys;
+
+                    for(int n = 0 ; n <= (amplitude - yMin) ; n++){
+                        amplitudes.push_back( amplitude - n );
+                        keys.push_back(i);
+                    }
+                    amplitudes.push_back( yMin );
+                    keys.push_back(i);
+                    customPlot->graph(0)->addData(keys,amplitudes);
+                    k++;
+                    j = j+2;
+                    }
+                }
+
+            }
+            else{
+                QVector<double> x, y;
+                for (int j=0; j<vect->size(); ++j)
+                {
+                  //x.push_back( j/15.0 * 5*3.14 + 0.01);
+                  //y.push_back(7*qSin(x[j])/x[j] - (i-QCPGraph::lsNone)*5 + (QCPGraph::lsImpulse)*5 + 2)  ;
+                  x.push_back( j);
+                  y.push_back((*vect)[j])  ;
+
+                  if((*vect)[j]>yMax){
+                      yMax = (*vect)[j] + 5;
+                  }
+                }
+
+                customPlot->addGraph();
+                customPlot->graph(0)->setData(x,y);
+                customPlot->graph(0)->setLineStyle((QCPGraph::LineStyle)1);
+                customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 2));
+            }
+            customPlot->replot();
+        }
     }
 
 }
@@ -64,7 +133,8 @@ MainWindow::MainWindow(QWidget *parent) :
     customPlot = ui->customPlot;
     plotDrawer = new PlotDrawer(this);
 
-
+    QPushButton *switchBtn = ui->switchGraph;
+    QPushButton *graphStyleBtn = ui->graphStyleBtn;
 
     //1 sec interval timer and it's thread
     QThread* thread = new QThread;
@@ -78,7 +148,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //faster timer and it's thread
     QThread *plotTimerThread = new QThread;
     QTimer *plotTimer = new QTimer();
-    plotTimer->setInterval(200);
+    plotTimer->setInterval(60);
     plotTimer->moveToThread(plotTimerThread);
     connect(plotTimerThread, SIGNAL(started()), plotTimer, SLOT(start()));
     connect(plotTimerThread, SIGNAL(finished()), plotTimer, SLOT(deleteLater()));
@@ -89,8 +159,18 @@ MainWindow::MainWindow(QWidget *parent) :
     scrollLayout = new QFormLayout(scrollWidget);
     scroll->setWidget(scrollWidget);
 
+    connect(switchBtn, SIGNAL (released()),this, SLOT (handleSwitchBtn()));
+    connect(graphStyleBtn, SIGNAL (released()),this, SLOT (handleGraphStyle()));
+
     thread->start();
     plotTimerThread->start();
+}
+
+void  MainWindow::handleSwitchBtn(){
+    draw_usrp = !draw_usrp;
+}
+void  MainWindow::handleGraphStyle(){
+    graphStyle = !graphStyle;
 }
 
 MainWindow::~MainWindow()
@@ -129,7 +209,7 @@ void clearLayout(QLayout *layout){
 //populates a Qlayout within the scroll area with labels displaying cell info.
 void  MainWindow::upDateCellsInfo(){
 
-    qDebug().nospace() << qPrintable( QString::fromStdString(cellsList->display()) );
+    //qDebug().nospace() << qPrintable( QString::fromStdString(cellsList->display()) );
     clearLayout(scrollLayout);
     Node *cellsListNode = cellsList->getHead();
     while( cellsListNode != nullptr ){
