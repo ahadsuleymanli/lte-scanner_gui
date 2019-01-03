@@ -39,18 +39,18 @@ void PlotDrawer::drawPlot(){
         //customPlot->graph(0)->setData(x, y);
         customPlot->clearGraphs();
 
-        QVector<double> amplitudes;
-        QVector<double> keys;
 
+        customPlot->addGraph();
         for( int i = 0 ; i<y.size() ; i++){
-            customPlot->addGraph();
             QVector<double> amplitudes;
-            amplitudes.push_back(y[i]);
-            amplitudes.push_back(yMin);
             QVector<double> keys;
+            amplitudes.push_back( yMin );
             keys.push_back(i);
+            amplitudes.push_back( y[i] );
             keys.push_back(i);
-            customPlot->graph(i)->addData(keys,amplitudes);
+            amplitudes.push_back( yMin );
+            keys.push_back(i);
+            customPlot->graph(0)->addData(keys,amplitudes);
         }
         customPlot->replot();
     }
@@ -65,8 +65,7 @@ void PlotDrawer::drawPlot(){
                 this->xMax = vect->size();
             }
             if(graphStyle){
-                int j = 0;
-                int k = 0;
+
                 customPlot->addGraph();
                 customPlot->graph(0)->setLineStyle((QCPGraph::LineStyle)1);
                 customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 1));
@@ -75,21 +74,17 @@ void PlotDrawer::drawPlot(){
                     if((*vect)[i]>yMax){
                         yMax = amplitude + 5;
                     }
-                    if(i==j){
-
                     QVector<double> amplitudes;
                     QVector<double> keys;
 
-                    for(int n = 0 ; n <= (amplitude - yMin) ; n++){
-                        amplitudes.push_back( amplitude - n );
-                        keys.push_back(i);
-                    }
+                    amplitudes.push_back( yMin );
+                    keys.push_back(i);
+                    amplitudes.push_back( amplitude );
+                    keys.push_back(i);
                     amplitudes.push_back( yMin );
                     keys.push_back(i);
                     customPlot->graph(0)->addData(keys,amplitudes);
-                    k++;
-                    j = j+2;
-                    }
+
                 }
 
             }
