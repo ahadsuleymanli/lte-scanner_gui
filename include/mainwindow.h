@@ -15,10 +15,13 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     void setCellsList(Cell_info_LL * cellsList);
-    void setUsrpGetterParams(double *freq, bool *stopFlag, std::vector<float> *lpdftVect){
+
+    void setUsrpGetterParams(bool *stopFlag, double *freq, double *bw, string *freqStr, std::vector<float> *lpdftVect){
         this->freq=freq;
         this->stopFlag=stopFlag;
         this->lpdftVect = lpdftVect;
+        this->bw = bw;
+        this->freqStr =freqStr;
     }
     ~MainWindow();
 
@@ -27,7 +30,8 @@ public slots:
     void  upDateCellsInfo();
     void  handleSwitchBtn();
     void  handleGraphStyle();
-    void  upDatePlot();
+    void  updatePlot();
+    void  updateFreq();
 
 protected:
       void showEvent(QShowEvent *ev);
@@ -43,6 +47,8 @@ public:
     QFormLayout *scrollLayout;
     QCustomPlot* customPlot;
 
+    string *freqStr;
+    double *bw;
     double *freq;
     bool *stopFlag;
     vector<float> *lpdftVect;
@@ -74,7 +80,7 @@ class PlotDrawer
         // set axes ranges, so we see all data:
         customPlot->xAxis->setRange(0, xMax);
         customPlot->yAxis->setRange(yMin, yMax);
-        customPlot->xAxis->setVisible(false);
+        ;
     }
     ~PlotDrawer();
 

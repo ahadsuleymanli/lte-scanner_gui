@@ -10,13 +10,21 @@
 #include "mousereactiveqwidget.h"
 
 bool draw_usrp = true;
-bool graphStyle = false;
+bool graphStyle = true;
 
 PlotDrawer *plotDrawer;
 
 void PlotDrawer::drawPlot(){
-    customPlot->xAxis->setRange(0,xMax);
+    double bw = *(ui->bw);
+    double centerFreq = *(ui->freq);
+    double startFreq = centerFreq-bw/2;
+    customPlot->xAxis->setRange(0 ,xMax);
     customPlot->yAxis->setRange(yMin,yMax);
+    QString freqStr = QString::fromStdString (*(ui->freqStr));
+
+    //customPlot->xAxis->setVisible(false);
+    customPlot->xAxis->setLabel(freqStr);
+
     if (cellsListNode==nullptr)
         this->cellsListNode = ui->cellsList->getHead();
 
@@ -55,7 +63,12 @@ void PlotDrawer::drawPlot(){
         customPlot->replot();
     }
     else if(draw_usrp){
-        yMax = -80;
+        double bw = *(ui->bw);
+        double centerFreq = *(ui->freq);
+        double startFreq = centerFreq-bw/2;
+        customPlot->yAxis->setRange(yMin,-20);
+
+        //yMax = -80;
         vector<float> *vect = ui->lpdftVect;
         if((*vect).size())
         {
@@ -71,30 +84,42 @@ void PlotDrawer::drawPlot(){
                 customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 1));
                 for( int i = 0 ; i<vect->size() ; i++){
                     double amplitude = (*vect)[i];
-                    if((*vect)[i]>yMax){
-                        yMax = amplitude + 5;
+                    if((*vect)[i]>yMax){;
+                        //yMax = amplitude + 5;
                     }
                     QVector<double> amplitudes;
                     QVector<double> keys;
 
-                    amplitudes.push_back( yMin );
-                    keys.push_back(i);
-                    amplitudes.push_back( amplitude );
-                    keys.push_back(i);
-                    amplitudes.push_back( yMin );
-                    keys.push_back(i);
+                    if(0){
+                        customPlot->xAxis->setRange(startFreq,startFreq+bw);
+                        amplitudes.push_back( yMin );
+                        keys.push_back(i*bw/2048 + startFreq);
+                        amplitudes.push_back( amplitude );
+                        keys.push_back(i*bw/2048 + startFreq);
+                        amplitudes.push_back( yMin );
+                        keys.push_back(i*bw/2048 + startFreq);
+
+                    }
+                    else{
+                        amplitudes.push_back( yMin );
+                        keys.push_back(i );
+                        amplitudes.push_back( amplitude );
+                        keys.push_back(i);
+                        amplitudes.push_back( yMin );
+                        keys.push_back(i );
+                    }
                     customPlot->graph(0)->addData(keys,amplitudes);
-
                 }
-
             }
             else{
+                customPlot->yAxis->setRange(yMin,-20);
+                customPlot->xAxis->setRange(startFreq,startFreq+bw);
                 QVector<double> x, y;
                 for (int j=0; j<vect->size(); ++j)
                 {
                   //x.push_back( j/15.0 * 5*3.14 + 0.01);
                   //y.push_back(7*qSin(x[j])/x[j] - (i-QCPGraph::lsNone)*5 + (QCPGraph::lsImpulse)*5 + 2)  ;
-                  x.push_back( j);
+                  x.push_back( j*bw/2048 + startFreq);
                   y.push_back((*vect)[j])  ;
 
                   if((*vect)[j]>yMax){
@@ -147,7 +172,7 @@ MainWindow::MainWindow(QWidget *parent) :
     plotTimer->moveToThread(plotTimerThread);
     connect(plotTimerThread, SIGNAL(started()), plotTimer, SLOT(start()));
     connect(plotTimerThread, SIGNAL(finished()), plotTimer, SLOT(deleteLater()));
-    connect(plotTimer, SIGNAL(timeout()), this, SLOT(upDatePlot()));
+    connect(plotTimer, SIGNAL(timeout()), this, SLOT(updatePlot()));
 
     scrollWidget = new QWidget;
     scroll = ui->scrollArea;
@@ -156,7 +181,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(switchBtn, SIGNAL (released()),this, SLOT (handleSwitchBtn()));
     connect(graphStyleBtn, SIGNAL (released()),this, SLOT (handleGraphStyle()));
-
+    connect(ui->freqLineEdit, SIGNAL (returnPressed()),this, SLOT (updateFreq()));
+    connect(ui->bwLineEdit, SIGNAL (returnPressed()),this, SLOT (updateFreq()));
+    ui->bwLineEdit->hide();
     thread->start();
     plotTimerThread->start();
 }
@@ -166,6 +193,21 @@ void  MainWindow::handleSwitchBtn(){
 }
 void  MainWindow::handleGraphStyle(){
     graphStyle = !graphStyle;
+}
+void  MainWindow::updateFreq(){
+
+    double newFreq = ui->freqLineEdit->text().toDouble();
+    double newBw = ui->bwLineEdit->text().toDouble();
+    newBw = round( newBw / 1e3 ) * 1e3;
+    if (newFreq>1e4)
+        newFreq = round( newFreq / 1e3 ) * 1e3;
+    qDebug().nospace() << "freq changed to: "<< newFreq;
+
+    if (newFreq!=NULL)
+        *(this->freq) = newFreq;
+    //*(this->bw)!=newBw
+    if (newBw!=NULL)
+        *(this->bw) = newBw;
 }
 
 MainWindow::~MainWindow()
@@ -235,7 +277,7 @@ void  MainWindow::upDateCellsInfo(){
 
 
 
-void  MainWindow::upDatePlot(){
+void  MainWindow::updatePlot(){
     plotDrawer->drawPlot();
 }
 

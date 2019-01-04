@@ -737,8 +737,20 @@ static void rtlsdr_callback(
   sampbuf_sync.condition.notify_one();
 }
 
+void canceller(bool *cancelBit, rtlsdr_dev_t *dev){
+    while(true){
+        if(*cancelBit){
+            rtlsdr_cancel_async(dev);
+            cout<<"lte_tracker_Exiting";
+            exit(0);
+            return;
+        }
+        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    }
+}
+
 // Main routine.
-int lteTracker(const int argc,char * const argv[], Cell_info_LL *cellsList) {
+int lteTracker(const int argc,char * const argv[], Cell_info_LL *cellsList, bool &cancelBit) {
   // Command line parameters are stored here.
   double fc_requested;
   double ppm;
@@ -790,15 +802,12 @@ int lteTracker(const int argc,char * const argv[], Cell_info_LL *cellsList) {
   capbuf_sync.request=false;
   capbuf_sync.capbuf.set_size(19200*8);
   boost::thread searcher_thr(searcher_thread,boost::ref(capbuf_sync),boost::ref(global_thread_data),boost::ref(tracked_cell_list));
-
   // Start the producer thread.
   boost::thread producer_thr(producer_thread,boost::ref(sampbuf_sync),boost::ref(capbuf_sync),boost::ref(global_thread_data),boost::ref(tracked_cell_list),boost::ref(fc_programmed));
-
   sampbuf_sync.fifo_peak_size=0;
-
   // Launch the display thread
   boost::thread display_thr(display_thread,boost::ref(sampbuf_sync),boost::ref(global_thread_data),boost::ref(tracked_cell_list),boost::ref(expert_mode), boost::ref(cellsList));
-
+  //boost::thread cancellerThread(canceller, boost::ref(cancelBit), boost::ref(dev));
   // The remainder of this thread simply copies data received from the USB
   // device (or a file!) to the producer thread. This can be considered
   // the pre_producer thread.
@@ -840,6 +849,13 @@ int lteTracker(const int argc,char * const argv[], Cell_info_LL *cellsList) {
   } else {
     // Start the async read process. This should never return.
     rtlsdr_read_async(dev,rtlsdr_callback,(void *)&sampbuf_sync,0,0);
+    cout<< "trying to joing threads\n";
+
+    searcher_thr.join();
+    producer_thr.join();
+    display_thr.join();
+    cout<< "threads joined! exitting\n";
+    return 0;
   }
 
   // Successful exit. (Should never get here!)

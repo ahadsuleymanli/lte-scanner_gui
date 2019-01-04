@@ -160,7 +160,7 @@ namespace usrp_get_fft{
     static const size_t albl_skip = 5, flbl_skip = 20;
 
     template <typename T> log_pwr_dft_type log_pwr_dft(
-        const std::complex<T> *samps, size_t nsamps
+        const std::complex<T> *samps, size_t nsamps, double w_n
     ){
         if (nsamps & (nsamps - 1))
             throw std::runtime_error("num samps is not a power of 2");
@@ -173,7 +173,7 @@ namespace usrp_get_fft{
             //double w_n = 0.54 //hamming window
             //    -0.46*std::cos(2*pi*n/(nsamps-1))
             //;
-            double w_n = 0.35875 //blackman-harris window
+           // w_n = 0.35875 //blackman-harris window
                 -0.48829*std::cos(2*pi*n/(nsamps-1))
                 +0.14128*std::cos(4*pi*n/(nsamps-1))
                 -0.01168*std::cos(6*pi*n/(nsamps-1))
@@ -205,7 +205,7 @@ namespace usrp_get_fft{
 
 } //namespace ascii_dft
 
-void get_fft(double &freq, bool &stopFlag, std::vector<float> &lpdftVect ) {
+void get_fft(bool &stopFlag, double &freq, double &bw, std::string &freqStr ,std::vector<float> &lpdftVect ) {
     uhd::set_thread_priority_safe();
 
     std::string device_args("addr=192.168.10.2");
@@ -215,12 +215,13 @@ void get_fft(double &freq, bool &stopFlag, std::vector<float> &lpdftVect ) {
 
     double rate(1e6);
     //double freq(915e6);
-    double gain(20);
+    double gain(30);
     //double bw(20e6);
-    double bw;
-    bw = 20e6;
+    //double bw;
+    //bw = 20e6;
+    //bw = 1e6;
 
-    size_t num_bins = 512 * 4;
+    size_t num_bins = 512 * 2 ;
 
     //create a usrp device
     std::cout << std::endl;
@@ -305,8 +306,36 @@ void get_fft(double &freq, bool &stopFlag, std::vector<float> &lpdftVect ) {
     usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
     //boost::timer t;
     //t.restart();
-
+    double freq2=freq;
+    double bw2=freq;
     while( !stopFlag /*&& t.elapsed()<=1.1*/){
+
+        if(freq2!=freq){
+            usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
+
+            freq2=freq;
+
+            uhd::tune_request_t tune_request(freq);
+            usrp->set_rx_freq(tune_request);
+            //boost::this_thread::sleep(boost::posix_time::seconds(1));
+            rx_stream = usrp->get_rx_stream(stream_args);
+            usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+            //usrp->set_rx_bandwidth(bw);
+
+        }
+        if(bw2!=bw){
+            bw2 = bw;
+
+            usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
+            uhd::tune_request_t tune_request(freq);
+            usrp->set_rx_freq(tune_request);
+            usrp->set_rx_bandwidth(bw);
+            //boost::this_thread::sleep(boost::posix_time::seconds(1));
+            rx_stream = usrp->get_rx_stream(stream_args);
+            usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+        }
+        freqStr = "usrp freq: " + std::to_string(usrp->get_rx_freq()/1e6) + " MHZ, bw: " + std::to_string(usrp->get_rx_bandwidth()/1e6 );
+        freqStr+=" MHZ";
         size_t num_rx_samps = rx_stream->recv(
             &buff.front(), buff.size(), md
         );
@@ -314,7 +343,7 @@ void get_fft(double &freq, bool &stopFlag, std::vector<float> &lpdftVect ) {
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
 
         usrp_get_fft::log_pwr_dft_type lpdft = (
-            usrp_get_fft::log_pwr_dft(&buff.front(), num_rx_samps)
+            usrp_get_fft::log_pwr_dft(&buff.front(), num_rx_samps, bw / 1e6)
         );
 
         lpdftVect.clear();

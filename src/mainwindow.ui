@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1255</width>
-    <height>654</height>
+    <height>746</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -73,7 +73,7 @@
              <x>0</x>
              <y>0</y>
              <width>198</width>
-             <height>526</height>
+             <height>585</height>
             </rect>
            </property>
           </widget>
@@ -84,18 +84,50 @@
           <property name="minimumSize">
            <size>
             <width>170</width>
-            <height>0</height>
+            <height>70</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>170</width>
+            <width>200</width>
             <height>40</height>
            </size>
           </property>
           <property name="title">
-           <string>GroupBox</string>
+           <string>Freq:</string>
           </property>
+          <widget class="QLineEdit" name="freqLineEdit">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>30</y>
+             <width>91</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>1850.1e6</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="bwLineEdit">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>120</x>
+             <y>30</y>
+             <width>71</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="toolTip">
+            <string>set bandwidth</string>
+           </property>
+           <property name="text">
+            <string>20e6</string>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>

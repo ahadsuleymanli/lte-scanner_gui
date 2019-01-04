@@ -312,6 +312,6 @@ void display_thread(
   bool & expert_mode,
   Cell_info_LL *cellsList
 );
-int lteTracker(const int argc,char * const argv[], Cell_info_LL *cellsList);
+int lteTracker(const int argc,char * const argv[], Cell_info_LL *cellsList, bool &cancelBit);
 #endif
 

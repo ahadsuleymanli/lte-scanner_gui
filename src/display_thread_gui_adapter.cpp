@@ -95,6 +95,7 @@ void display_thread(
 
 
   while (true) {
+      cout<<"display_thread\n";
       boost::mutex::scoped_lock lock(tracked_cell_list.mutex);
       list <tracked_cell_t *>::iterator it=tracked_cell_list.tracked_cells.begin();
       vector <tracked_cell_t *> pass2_display;
