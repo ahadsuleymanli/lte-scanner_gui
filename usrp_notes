@@ -1,0 +1,28 @@
+sudo screen /dev/ttyUSB0 115200
+
+ifconfig eth0 192.168.1.10 netmask 255.255.255.0
+cd /usr/lib/uhd/examples
+./rx_samples_to_udp  --freq 100.0e6 --gain 30 --addr 192.168.1.2 --nsamps 10000
+
+./rx_ascii_art_dft --freq 1850.1e6 --gain 30 --rate 400e3 --ref-lvl -60
+
+
+
+http://www.blog.rmcaromi.com/python-unpack-complex-data-received-from-usrp-rx_samples_to_udp-cpp/
+
+
+
+
+
+
+1850.3
+1849.95
+
+
+https://stackoverflow.com/questions/8186953/shared-memory-with-two-processes-in-c
+https://cboard.cprogramming.com/c-programming/108964-problem-linked-list-shared-memory.html
+
+just do an array.
+
+
+shutdown ­-h now
